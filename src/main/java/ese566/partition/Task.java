@@ -4,7 +4,9 @@ public class Task {
 
 	private int weightSW;
 	private int weightHW;
+	private int currentWeight;
 	private boolean isSW;
+	
 	
 	public Task(int weightSW, int weightHW)
 	{
@@ -16,6 +18,12 @@ public class Task {
 	public void setIsSW(boolean isSW)
 	{
 		this.isSW = isSW;
+		currentWeight = (isSW ? weightSW : weightHW);
+	}
+	
+	public int getCurrentWeight()
+	{
+		return currentWeight;
 	}
 	
 	public int getWeightSW()
