@@ -17,20 +17,22 @@ public class PartitionRunner
 	
     public static void main( String[] args )
     {
-    	ArrayList<Task> tasks = generateRandomTasks(10000);
+    	ArrayList<Task> tasks = generateRandomTasks(500000);
     	
-    	int [][] matrix = {
+    	int [][] matrixSmall = {
     			{0, 1, 1, 1},
     			{1, 0, 1, 1},
     			{1, 1, 0, 1},
     			{1, 1, 1, 0}
     	};
     	
-    	int [][] m1 = generateAdjacencyMatrix(10);
+    	int n = 50;
+    	int [][] matrix = generateAdjacencyMatrix(n);
+    	
     	writeAdjacencyMatrix(matrix);
     	writeTaskList(tasks);
     	
-        HwSwPartition partition = new HwSwPartition(4,matrix,tasks);
+        HwSwPartition partition = new HwSwPartition(n,matrix,tasks);
         try {
         	partition.partition();
         }
@@ -59,6 +61,39 @@ public class PartitionRunner
     {
     	int [][] matrix = new int[nodes][nodes];
     	
+    	for(int row = 0; row < nodes; row ++)
+    	{
+    		for(int col = row; col < nodes; col++)
+    		{
+    			if(row == col)
+    			{
+    				matrix[row][col] = 0;
+    			}
+    			else
+    			{
+    				int connection = ThreadLocalRandom.current().nextInt(0, 2);
+    				matrix[row][col] = connection;
+    				matrix[col][row] = connection;
+    			}
+    			
+    		}
+    		
+    		//if whole row is 0, we populate at least one edge
+    		boolean noConnection = true;
+    		for(int col = 0; col < nodes; col++)
+    		{
+    			if(matrix[row][col] == 1)
+    				noConnection = false;
+    		}
+    		
+    		if(noConnection)
+    		{
+    			matrix[row][row+1] = 1;
+    			matrix[row+1][row] = 1;
+    		}
+    		
+    		
+    	}
     	
     	return matrix;
     }

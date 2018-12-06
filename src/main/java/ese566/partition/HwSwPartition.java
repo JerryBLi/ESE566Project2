@@ -1,5 +1,7 @@
 package ese566.partition;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -80,10 +82,23 @@ public class HwSwPartition {
 	 */
 	private void outputParetoFront()
 	{
-		for(Node n : nodes)
+		try
 		{
-			n.printNode();
+			 BufferedWriter writer = new BufferedWriter(new FileWriter("results.txt"));
+			 writer.write("Alpha Value: "+alpha +"\n");
+			for(Node n : nodes)
+			{
+				writer.write(n.printNode());
+			}
+			writer.close();
 		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		System.out.println("-----------------End Partition-----------------");
+	
 	}
 	
 	/**
@@ -93,7 +108,6 @@ public class HwSwPartition {
 	public void partition() throws Exception
 	{
 		System.out.println("-----------------Begin Partition-----------------");
-		System.out.println("Alpha Value: " + alpha);
 		int loopCounter = 1; //This is used to keep trace of the loop in case we want a max num of iterations
 		
 		//initialize the population
@@ -115,8 +129,7 @@ public class HwSwPartition {
 			loopCounter++;
 		}
 		implementationSelection();
-		//display result to user
-		System.out.println("Number of interations: " + loopCounter);
+		//display to user
 		outputParetoFront();
 		
 	}

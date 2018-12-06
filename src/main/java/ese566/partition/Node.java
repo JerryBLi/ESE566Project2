@@ -212,18 +212,20 @@ public class Node implements Comparable<Node> {
 
 	}
 	
-	public void printNode()
+	public String printNode()
 	{
-		System.out.print("Node " + nodeNum + " (Total Load: " +this.calculateLoad() +") | "
+		StringBuilder s = new StringBuilder();
+		s.append("Node " + nodeNum + " (Total Load: " +this.calculateLoad() +") | "
 				+ "(Hardware Load: " + this.getHardwareLoad() + ") | "
 				+ "(Software Load: " + this.getSoftwareLoad() + ") "
 				+ "-  Tasks: ");
 		
 		for(Task t : tasks)
 		{
-			System.out.print("T"+t.getTaskNum()+"("+ (t.isSW() ? "SW - " : "HW - ") + t.getCurrentWeight() +") | ");
+			s.append("T"+t.getTaskNum()+"("+ (t.isSW() ? "SW - " : "HW - ") + t.getCurrentWeight() +") | ");
 		}
-		System.out.println();
+		s.append("\n");
+		return s.toString();
 	}
 	
 
