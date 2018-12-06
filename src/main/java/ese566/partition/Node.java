@@ -13,6 +13,8 @@ public class Node implements Comparable<Node> {
 	
 	private int nodeNum;
 	
+	private static final double errorMargin = 0.1;
+	
 	public Node(int nodeNum)
 	{
 		this.nodeNum = nodeNum;
@@ -91,17 +93,8 @@ public class Node implements Comparable<Node> {
 	 * @return the current load of the node
 	 */
 	public int calculateLoad()
-	{
-		int load = 0;
-		for(Task t : tasks)
-		{
-			load += t.getCurrentWeight();
-		}
-		
-		if(load == currentLoad)
-			System.out.println("REPLACE WITH CURRENTLOAD (node,calculateLoad)");
-		
-		return load;
+	{		
+		return currentLoad;
 	}
 	
 	/**
@@ -162,56 +155,97 @@ public class Node implements Comparable<Node> {
 				
 				switched = false;
 				
+				//if the difference is smaller than the percentage, we call it good
+				double avgTemp = currentWeightHW + currentWeightSW / 2.0; 
+				if(weightDifference <= avgTemp * errorMargin)
+					break;
+				
 				//if the HW weight is larger, we want to switch tasks to SW
-				if(currentWeightHW > currentWeightSW)
+				for(Task t : tasks)
 				{
-					for(Task t : tasks)
+					if(currentWeightHW > currentWeightSW)
 					{
-						if(t.isSW())
-							continue;
+
+							if(t.isSW())
+								continue;
+							
+							if(t.getWeightSW() < weightDifference)
+							{
+								currentWeightHW -= t.getWeightHW();
+								currentWeightSW += t.getWeightSW();
+								weightDifference = Math.abs(currentWeightHW - currentWeightSW);
+								t.setIsSW(true);
+								switched = true;
+							}	
 						
-						if(t.getWeightSW() < weightDifference)
-						{
-							currentWeightHW -= t.getWeightHW();
-							currentWeightSW += t.getWeightSW();
-							weightDifference = Math.abs(currentWeightHW - currentWeightSW);
-							t.setIsSW(true);
-							switched = true;
-						}	
 					}
-				}
-				else
-				{
-					for(Task t : tasks)
+					else
 					{
-						if(!t.isSW())
-							continue;
-						
-						if(t.getWeightHW() < weightDifference)
-						{
-							currentWeightSW -= t.getWeightSW();
-							currentWeightHW += t.getWeightHW();
-							weightDifference = Math.abs(currentWeightHW - currentWeightSW);
-							t.setIsSW(false);
-							switched = true;
+		
+							if(!t.isSW())
+								continue;
+							
+							if(t.getWeightHW() < weightDifference)
+							{
+								currentWeightSW -= t.getWeightSW();
+								currentWeightHW += t.getWeightHW();
+								weightDifference = Math.abs(currentWeightHW - currentWeightSW);
+								t.setIsSW(false);
+								switched = true;
+							
 						}
 					}
 				}
+
 			}
 			
 		}
 
 	}
-
 	
 	public void printNode()
 	{
-		System.out.print("Node " + nodeNum + "(" +this.calculateLoad() +"):  Tasks: ");
+		System.out.print("Node " + nodeNum + " (Total Load: " +this.calculateLoad() +") | "
+				+ "(Hardware Load: " + this.getHardwareLoad() + ") | "
+				+ "(Software Load: " + this.getSoftwareLoad() + ") | "
+				+ "-  Tasks: ");
+		
 		for(Task t : tasks)
 		{
-			System.out.println("T"+t.getTaskNum()+"("+ (t.isSW() ? "SW // " : "HW // ") + t.getCurrentWeight() +") ");
+			System.out.print("T"+t.getTaskNum()+"("+ (t.isSW() ? "SW - " : "HW - ") + t.getCurrentWeight() +") | ");
 		}
 		System.out.println();
+	}
+	
+
+	/**
+	 * Helper function for displaying the node data
+	 * @return total hardware load
+	 */
+	private double getHardwareLoad()
+	{
+		double load = 0;
+		for(Task t : tasks)
+		{
+			load += (t.isSW() ? 0 : t.getCurrentWeight());
+		}
+		
+		return load;
+	}
+	
+	/**
+	 * Helper function for displaying the Node data
+	 * @return total software load
+	 */
+	private double getSoftwareLoad()
+	{
+		double load = 0;
+		for(Task t : tasks)
+		{
+			load += (t.isSW() ? t.getCurrentWeight() : 0);
+		}
+		
+		return load;
 	}
 	
 	public int compareTo(Node o) {

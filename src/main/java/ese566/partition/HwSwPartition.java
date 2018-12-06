@@ -189,6 +189,11 @@ public class HwSwPartition {
 				}
 			}
 			
+			if(nodeWithLargestLoadDiff == -1)
+			{
+				break;
+			}
+			
 			//At this point we know which node is largest difference from currentNode
 			
 			//find yContinuous
@@ -222,7 +227,7 @@ public class HwSwPartition {
 		for(boolean b : visited)
 		{
 			if(!b)
-				return !b;
+				return b;
 		}
 		return true;
 	}
@@ -266,23 +271,28 @@ public class HwSwPartition {
 	/* HELPER FUNCTIONS */
 	/**
 	 * Go through each node and calculate the average weight
+	 * The average weight is the average of the average of HW and SW
 	 * @return
 	 */
 	private double calculateAvgWeight()
 	{
 		double avgWeight = 0;
+		double swAvg = 0;
+		double hwAvg = 0;
 		
 		for(Node n : nodes)
 		{
 			ArrayList<Task> tasks = n.getTasks();
 			for(Task t : tasks)
 			{
-				avgWeight += (double)t.getCurrentWeight();
+				swAvg += (t.isSW() ? t.getCurrentWeight() : 0);
+				hwAvg += (t.isSW() ? 0 : t.getCurrentWeight());
 			}
 			
 		}
-		
-		avgWeight = avgWeight / nodes.length;
+		swAvg = swAvg / nodes.length;
+		hwAvg = hwAvg / nodes.length;
+		avgWeight = ( swAvg + hwAvg) / 2;
 		
 		return avgWeight;
 		
@@ -302,20 +312,24 @@ public class HwSwPartition {
 		
 		for(Node n : nodes)
 		{
+			double softwareWeight = 0;
+			double hardwareWeight = 0;
 			ArrayList<Task> tasks = n.getTasks();
 			for(Task t : tasks)
 			{
 				if(t.isSW())
 				{
-					if(t.getCurrentWeight() > maxSoftwareWeight)
-						maxSoftwareWeight = t.getCurrentWeight();
+						softwareWeight += t.getCurrentWeight();
 				}
 				else
 				{
-					if(t.getCurrentWeight() > maxHardwareWeight)
-						maxHardwareWeight = t.getCurrentWeight();
+						hardwareWeight += t.getCurrentWeight();
 				}
 			}
+			if(hardwareWeight > maxHardwareWeight)
+				maxHardwareWeight = hardwareWeight;
+			if(softwareWeight > maxSoftwareWeight)
+				maxSoftwareWeight = softwareWeight;
 		}
 		
 		return Math.max(maxSoftwareWeight, maxHardwareWeight);
