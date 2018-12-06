@@ -11,10 +11,11 @@ public class Node implements Comparable<Node> {
 	
 	private int numTimesNoTasksSent; //counter to keep track of how many times the sendTasks have been called but no tasks sent. If this number is too high, we should randomize the HW/SW
 	
-	private static final double errorPercentage = 0.1;
+	private int nodeNum;
 	
-	public Node()
+	public Node(int nodeNum)
 	{
+		this.nodeNum = nodeNum;
 		tasks = new ArrayList<Task>();
 		currentLoad = 0;
 		numTimesNoTasksSent = 0;
@@ -169,10 +170,11 @@ public class Node implements Comparable<Node> {
 						if(t.isSW())
 							continue;
 						
-						if(t.getWeightSW() <= weightDifference)
+						if(t.getWeightSW() < weightDifference)
 						{
 							currentWeightHW -= t.getWeightHW();
 							currentWeightSW += t.getWeightSW();
+							weightDifference = Math.abs(currentWeightHW - currentWeightSW);
 							t.setIsSW(true);
 							switched = true;
 						}	
@@ -185,10 +187,11 @@ public class Node implements Comparable<Node> {
 						if(!t.isSW())
 							continue;
 						
-						if(t.getWeightHW() <= weightDifference)
+						if(t.getWeightHW() < weightDifference)
 						{
 							currentWeightSW -= t.getWeightSW();
 							currentWeightHW += t.getWeightHW();
+							weightDifference = Math.abs(currentWeightHW - currentWeightSW);
 							t.setIsSW(false);
 							switched = true;
 						}
@@ -201,7 +204,16 @@ public class Node implements Comparable<Node> {
 	}
 
 	
-
+	public void printNode()
+	{
+		System.out.print("Node " + nodeNum + "(" +this.calculateLoad() +"):  Tasks: ");
+		for(Task t : tasks)
+		{
+			System.out.println("T"+t.getTaskNum()+"("+ (t.isSW() ? "SW // " : "HW // ") + t.getCurrentWeight() +") ");
+		}
+		System.out.println();
+	}
+	
 	public int compareTo(Node o) {
 		
 		if(currentLoad == o.calculateLoad())

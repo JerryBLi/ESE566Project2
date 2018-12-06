@@ -6,12 +6,13 @@ public class Task {
 	private int weightHW;
 	private int currentWeight;
 	private boolean isSW;
+	private int taskNum;
 	
-	
-	public Task(int weightSW, int weightHW)
+	public Task(int weightSW, int weightHW,int taskNum)
 	{
 		this.weightHW = weightHW;
 		this.weightSW = weightSW;
+		this.taskNum = taskNum;
 		isSW = false;
 	}
 	
@@ -19,6 +20,11 @@ public class Task {
 	{
 		this.isSW = isSW;
 		currentWeight = (isSW ? weightSW : weightHW);
+	}
+	
+	public int getTaskNum()
+	{
+		return taskNum;
 	}
 	
 	public int getCurrentWeight()

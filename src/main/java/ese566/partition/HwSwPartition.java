@@ -1,12 +1,14 @@
 package ese566.partition;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 public class HwSwPartition {
 
+	private ArrayList<Task> tasks;
 	private int [] [] adjacencyMatrix;
 	private int [] [] degreeMatrix;
 	
@@ -44,11 +46,14 @@ public class HwSwPartition {
 		nodes = new Node[numNodes];
 		for(int i = 0; i < numNodes; i++)
 		{
-			nodes[i] = new Node();
+			nodes[i] = new Node(i);
 		}
 		
 		//Set the adjacency matrix
 		this.adjacencyMatrix = adjacencyMatrix;
+		
+		//Set the tasks
+		this.tasks = tasks;
 		
 		//Create the degree matrix
 		degreeMatrix = createDegreeMatrix(adjacencyMatrix);
@@ -57,6 +62,7 @@ public class HwSwPartition {
 		try
 		{
 			alpha = calculateAlphaValue();
+			
 		}
 		catch(Exception e)
 		{
@@ -64,15 +70,20 @@ public class HwSwPartition {
 			System.exit(-1);
 		}
 		
+		
+		
 	}
 	
 	
 	/**
 	 * Display the optimal partition to user
 	 */
-	public void outputParetoFront()
+	private void outputParetoFront()
 	{
-		
+		for(Node n : nodes)
+		{
+			n.printNode();
+		}
 	}
 	
 	/**
@@ -81,7 +92,8 @@ public class HwSwPartition {
 	 */
 	public void partition() throws Exception
 	{
-		
+		System.out.println("-----------------Begin Partition-----------------");
+		System.out.println("Alpha Value: " + alpha);
 		int loopCounter = 1; //This is used to keep trace of the loop in case we want a max num of iterations
 		
 		//initialize the population
@@ -103,6 +115,7 @@ public class HwSwPartition {
 		}
 		
 		//display result to user
+		System.out.println("Number of interations: " + loopCounter);
 		outputParetoFront();
 		
 	}
@@ -113,7 +126,17 @@ public class HwSwPartition {
 	 */
 	private void initPop()
 	{
-		//TODO
+		for(Task t : tasks)
+		{
+			int hwSW = ThreadLocalRandom.current().nextInt(0, 2);
+			int currentNode = ThreadLocalRandom.current().nextInt(0, nodes.length);
+			boolean isSW = (hwSW == 1 ? true : false);
+			
+			t.setIsSW(isSW);
+			nodes[currentNode].addTask(t);
+		}
+		
+		
 	}
 	
 	/**
@@ -122,7 +145,14 @@ public class HwSwPartition {
 	 */
 	private void initPopSingle()
 	{
-		
+		for(Task t : tasks)
+		{
+			int hwSW = ThreadLocalRandom.current().nextInt(0, 2);
+			boolean isSW = (hwSW == 1 ? true : false);
+			
+			t.setIsSW(isSW);
+			nodes[0].addTask(t);
+		}
 	}
 	
 	/**
