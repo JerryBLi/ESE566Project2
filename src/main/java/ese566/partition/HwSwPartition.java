@@ -134,14 +134,59 @@ public class HwSwPartition {
 	{
 		boolean [] isNodeVisited = new boolean[nodes.length];
 		
+		int currentNode = 0;
+		
 		while(!allNodesVisited(isNodeVisited))
 		{
+			//we're visiting the node in this iteration
+			isNodeVisited[currentNode] = true;
+			
+			int nodeWithLargestLoadDiff = -1;
+			int largestLoadDiff = 0;
+			
+			//find largest yCont of unvisited nodes
+			for(int i =0; i < nodes.length; i++)
+			{
+				//if already visited, then skip
+				if(isNodeVisited[i])
+					continue;
+				
+				int currentLoadDiff = nodes[currentNode].calculateLoad() - nodes[i].calculateLoad();
+				if(Math.abs(currentLoadDiff) > largestLoadDiff)
+				{
+					largestLoadDiff = Math.abs(currentLoadDiff);
+					nodeWithLargestLoadDiff = i;
+				}
+			}
+			
+			//At this point we know which node is largest difference from currentNode
+			
+			//find yContinuous
+			double yContinuous = alpha * largestLoadDiff;
+			
+			//do we send from currentNode to node i or vice versa?
+			//if the load of currentNode - load of Node is positive, we send else, we receive
+			if(nodes[currentNode].calculateLoad() - nodes[nodeWithLargestLoadDiff].calculateLoad() > 0)
+			{
+				nodes[currentNode].sendTasks(yContinuous, nodes[nodeWithLargestLoadDiff]);
+			}
+			else
+			{
+				nodes[nodeWithLargestLoadDiff].sendTasks(yContinuous, nodes[currentNode]);
+			}
+			
+			currentNode = nodeWithLargestLoadDiff;
 			
 		}
 		
 		//TODO
 	}
 	
+	/**
+	 * Calculate if all nodes have been visited
+	 * @param visited array of whether a node has been visited
+	 * @return true is all nodes have been visited
+	 */
 	private boolean allNodesVisited(boolean [] visited)
 	{
 		for(boolean b : visited)
