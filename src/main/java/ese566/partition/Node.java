@@ -94,7 +94,12 @@ public class Node implements Comparable<Node> {
 	 */
 	public int calculateLoad()
 	{		
-		return currentLoad;
+		int load = 0;
+		for(Task t : tasks)
+		{
+			load += t.getCurrentWeight();
+		}
+		return load;
 	}
 	
 	/**
@@ -172,7 +177,9 @@ public class Node implements Comparable<Node> {
 							if(t.getWeightSW() < weightDifference)
 							{
 								currentWeightHW -= t.getWeightHW();
+								currentLoad -= t.getWeightHW();
 								currentWeightSW += t.getWeightSW();
+								currentLoad += t.getWeightSW();
 								weightDifference = Math.abs(currentWeightHW - currentWeightSW);
 								t.setIsSW(true);
 								switched = true;
@@ -188,7 +195,9 @@ public class Node implements Comparable<Node> {
 							if(t.getWeightHW() < weightDifference)
 							{
 								currentWeightSW -= t.getWeightSW();
+								currentLoad -= t.getWeightSW();
 								currentWeightHW += t.getWeightHW();
+								currentLoad += t.getWeightHW();
 								weightDifference = Math.abs(currentWeightHW - currentWeightSW);
 								t.setIsSW(false);
 								switched = true;
@@ -207,7 +216,7 @@ public class Node implements Comparable<Node> {
 	{
 		System.out.print("Node " + nodeNum + " (Total Load: " +this.calculateLoad() +") | "
 				+ "(Hardware Load: " + this.getHardwareLoad() + ") | "
-				+ "(Software Load: " + this.getSoftwareLoad() + ") | "
+				+ "(Software Load: " + this.getSoftwareLoad() + ") "
 				+ "-  Tasks: ");
 		
 		for(Task t : tasks)

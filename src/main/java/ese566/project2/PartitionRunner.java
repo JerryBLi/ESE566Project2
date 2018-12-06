@@ -17,7 +17,7 @@ public class PartitionRunner
 	
     public static void main( String[] args )
     {
-    	ArrayList<Task> tasks = generateRandomTasks(100);
+    	ArrayList<Task> tasks = generateRandomTasks(10000);
     	
     	int [][] matrix = {
     			{0, 1, 1, 1},
@@ -26,6 +26,7 @@ public class PartitionRunner
     			{1, 1, 1, 0}
     	};
     	
+    	int [][] m1 = generateAdjacencyMatrix(10);
     	writeAdjacencyMatrix(matrix);
     	writeTaskList(tasks);
     	
@@ -56,8 +57,10 @@ public class PartitionRunner
     
     public static int [][] generateAdjacencyMatrix(int nodes)
     {
-    	//TODO
-    	return null;
+    	int [][] matrix = new int[nodes][nodes];
+    	
+    	
+    	return matrix;
     }
     
     public static void writeAdjacencyMatrix(int[][] matrix)

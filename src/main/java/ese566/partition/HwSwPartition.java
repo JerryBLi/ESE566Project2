@@ -98,6 +98,7 @@ public class HwSwPartition {
 		
 		//initialize the population
 		initPop();
+		//initPopSingle();
 		
 		//calculate average weight
 		avgWeight = calculateAvgWeight();
@@ -113,7 +114,7 @@ public class HwSwPartition {
 			discreteDiffusion();
 			loopCounter++;
 		}
-		
+		implementationSelection();
 		//display result to user
 		System.out.println("Number of interations: " + loopCounter);
 		outputParetoFront();
@@ -277,22 +278,28 @@ public class HwSwPartition {
 	private double calculateAvgWeight()
 	{
 		double avgWeight = 0;
-		double swAvg = 0;
-		double hwAvg = 0;
+		double totalWeight = 0;
+		
+		double swWeight = 0;
+		double hwWeight = 0;
 		
 		for(Node n : nodes)
 		{
 			ArrayList<Task> tasks = n.getTasks();
 			for(Task t : tasks)
 			{
-				swAvg += (t.isSW() ? t.getCurrentWeight() : 0);
-				hwAvg += (t.isSW() ? 0 : t.getCurrentWeight());
+				swWeight += (t.isSW() ? t.getCurrentWeight() : 0);
+				hwWeight += (t.isSW() ? 0 : t.getCurrentWeight());
+				totalWeight += t.getCurrentWeight();
 			}
 			
 		}
-		swAvg = swAvg / nodes.length;
-		hwAvg = hwAvg / nodes.length;
-		avgWeight = ( swAvg + hwAvg) / 2;
+		
+		swWeight = swWeight / nodes.length;
+		hwWeight = hwWeight / nodes.length;
+		
+		avgWeight = (swWeight + hwWeight) / 2;
+		//avgWeight = totalWeight / nodes.length;
 		
 		return avgWeight;
 		
