@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Node {
 
 	private ArrayList<Task> tasks;
+
 	
 	public Node()
 	{
@@ -27,6 +28,11 @@ public class Node {
 	public ArrayList<Task> getTasks()
 	{
 		return tasks;
+	}
+	
+	public void balanceHWSW(double avgWeight)
+	{
+		//TODO
 	}
 	
 }

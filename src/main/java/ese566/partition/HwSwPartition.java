@@ -2,10 +2,17 @@ package ese566.partition;
 
 import java.util.ArrayList;
 
+import Jama.EigenvalueDecomposition;
+import Jama.Matrix;
+
 public class HwSwPartition {
 
 	private int [] [] adjacencyMatrix;
 	private int [] [] degreeMatrix;
+	
+	private int matrixRows;
+	private int matrixCols;
+	
 	private Node [] nodes;
 	
 	private double avgWeight;
@@ -23,11 +30,38 @@ public class HwSwPartition {
 	 */
 	public HwSwPartition(int numNodes, int [] [] adjacencyMatrix, ArrayList<Task> tasks)
 	{
+		matrixRows = adjacencyMatrix.length;
+		matrixCols = adjacencyMatrix[0].length;
+		if(adjacencyMatrix == null || (matrixRows != matrixCols))
+		{
+			adjacencyMatrix = new int [0][0];
+			matrixRows = 0;
+			matrixCols = 0;
+			System.out.println("Error: Bad Input - Adjacency Matrix");
+		}
+		
 		//Create Nodes 
 		nodes = new Node[numNodes];
 		for(int i = 0; i < numNodes; i++)
 		{
 			nodes[i] = new Node();
+		}
+		
+		//Set the adjacency matrix
+		this.adjacencyMatrix = adjacencyMatrix;
+		
+		//Create the degree matrix
+		degreeMatrix = createDegreeMatrix(adjacencyMatrix);
+		
+		//calculate the alpha value
+		try
+		{
+			alpha = calculateAlphaValue();
+		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());
+			System.exit(-1);
 		}
 		
 	}
@@ -48,15 +82,28 @@ public class HwSwPartition {
 	public void partition() throws Exception
 	{
 		
+		int loopCounter = 1; //This is used to keep trace of the loop in case we want a max num of iterations
+		
+		//initialize the population
 		initPop();
 		
+		//calculate average weight
+		avgWeight = calculateAvgWeight();
+		
+		//perform the first round of discreteDiffusion
 		discreteDiffusion();
 		
+		//Continue to improve and perform discrete diffusion
 		while(!terminate())
 		{
 			implementationSelection();
+			avgWeight = calculateAvgWeight();
 			discreteDiffusion();
+			loopCounter++;
 		}
+		
+		//display result to user
+		outputParetoFront();
 		
 	}
 	
@@ -85,7 +132,24 @@ public class HwSwPartition {
 	 */
 	private void discreteDiffusion()
 	{
+		boolean [] isNodeVisited = new boolean[nodes.length];
+		
+		while(!allNodesVisited(isNodeVisited))
+		{
+			
+		}
+		
 		//TODO
+	}
+	
+	private boolean allNodesVisited(boolean [] visited)
+	{
+		for(boolean b : visited)
+		{
+			if(!b)
+				return !b;
+		}
+		return true;
 	}
 	
 	/**
@@ -97,17 +161,29 @@ public class HwSwPartition {
 	{
 		boolean isSatisfied = false;
 		
-		//TODO
 		
+		double maxWeight = calculateMaxWeight();
+		
+		double sigma = avgWeight * SIGMA_PERCENTAGE; //this is the end factor 
+		
+		if(Math.abs(avgWeight - maxWeight) < sigma)
+		{
+			isSatisfied = true;
+		}
+	
 		return isSatisfied;
 	}
 	
 	/**
 	 * Equalize the HW and SW loads within each load
+	 * Objective is simply minimize the sum of the software loads on a node and the sum of the hardware loads on a node
 	 */
 	private void implementationSelection()
 	{
-		//TODO
+		for(Node n : nodes)
+		{
+			n.balanceHWSW(avgWeight);
+		}
 	}
 	
 	
@@ -171,6 +247,50 @@ public class HwSwPartition {
 	}
 	
 	/**
+	 * Creates the degree matrix from the adjacency matrix
+	 * @return The degree matrix
+	 */
+	private int[][] createDegreeMatrix(int [][] adjMatrix)
+	{
+		int [][] degreeMatrix = new int[matrixRows][matrixCols];
+		//calculate for each node
+		for(int i = 0; i < matrixRows; i++)
+		{
+			int nodeDegree = 0;
+			for(int j =0; j < matrixCols; j++)
+			{
+				if(adjacencyMatrix[i][j] == 1)
+				{
+					nodeDegree++;
+				}
+			}
+			degreeMatrix[i][i] = nodeDegree;
+		}
+		
+		return degreeMatrix;
+	}
+	
+	/**
+	 * Calculate the Laplacian matrix which is defined as L = D - B
+	 * @param D the Node degrees as diagonal entries (createDegreeMatrix)
+	 * @param B the adjacency matrix 
+	 * @return the Laplacian matrix
+	 */
+	private double[][] calculateLaplacianMatrix(int[][] D, int[][] B)
+	{
+		double [][] laplacianMatrix = new double[matrixRows][matrixCols];
+		for(int row = 0; row < matrixRows; row++)
+		{
+			for(int col = 0; col < matrixCols; col++)
+			{
+				laplacianMatrix[row][col] = (double)D[row][col] - (double)B[row][col];
+			}
+		}
+		
+		return laplacianMatrix;
+	}
+	
+	/**
 	 * The alpha value is defined as α = 1 / λ
 	 * λ = a certain numbering for the non-zero eigenvalues of Laplacian-matrix L
 	 * L = D - B
@@ -178,9 +298,37 @@ public class HwSwPartition {
 	 * B -> adjacency matrix
 	 * @return α
 	 */
-	private double calculateAlphaValue()
+	private double calculateAlphaValue() throws Exception
 	{
 		double lambda = 0;
+		
+		Matrix laplacianMatrix = new Matrix(calculateLaplacianMatrix(degreeMatrix,adjacencyMatrix));
+		EigenvalueDecomposition eigenValueDecomp = new EigenvalueDecomposition(laplacianMatrix);
+		
+		double [] eigenValues = eigenValueDecomp.getRealEigenvalues();
+		
+		//determine the best eigenValue to use. This value should be bigger than 1
+		
+		for(double eigenValue : eigenValues)
+		{
+			//no good, eigenvalue is too small
+			if((eigenValue > -1) && (eigenValue < 1) )
+			{
+				continue;
+			}
+			//choose the first eigenValue
+			else
+			{
+				lambda = eigenValue;
+				break;
+			}
+		}
+		
+		//we havent found a match
+		if(lambda == 0)
+		{
+			throw new Exception("Error: No lambda value found");
+		}
 		
 		return 1 / lambda;
 	}
